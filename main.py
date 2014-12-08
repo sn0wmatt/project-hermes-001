@@ -15,8 +15,12 @@
 # limitations under the License.
 #
 import webapp2
+import DateTime
+from google.appengine.ext import ndb
 from google.appengine.api import users
 from google.appengine.api import channel
+
+import datamodels
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -25,6 +29,7 @@ class MainHandler(webapp2.RequestHandler):
             self.redirect(users.create_login_url(self.request.uri))
             return
         talk_key = self.request.get("talkkey")
+        self.response.write("Hello world.")
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
