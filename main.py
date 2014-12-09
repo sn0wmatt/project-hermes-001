@@ -15,22 +15,63 @@
 # limitations under the License.
 #
 import webapp2
-import DateTime
-from google.appengine.ext import ndb
-from google.appengine.api import users
-from google.appengine.api import channel
+import os
 
-import datamodels
+from google.appengine.api import users
+from google.appengine.ext.webapp import template
+from models import Talk
 
 class MainHandler(webapp2.RequestHandler):
+    """
+        This is the main handler.
+    """
+
+    def queryTalks(ID):
+        q = Talk.all(keys_only=True)
+        return q.filter('__key__ >', ID)
+
+    def render_template(self, template_name, values):
+        path = os.path.join(os.path.dirname(__file__), "html", template_name)
+        return template.render(path, values)
+
     def get(self):
-        user = users.get_current_user() # gets the user from the googl thingy.
+        # gets the user from the google users datastore.
+        user = users.get_current_user()
+        talk_key = self.request.get("talk_key")
+
         if not user:
+            # if user is not logged in, log them in.
             self.redirect(users.create_login_url(self.request.uri))
             return
-        talk_key = self.request.get("talkkey")
-        self.response.write("Hello world.")
+        if not talk_key:
+            talk = Talk()
+            talk.put()
+            self.talk = talk
+            talk_key = talk.key.id()
+            self.redirect(str(self.request.url + "?talk_key=%i" % talk_key ))
+        else:
+            talk = Talk.get_by_id(long(self.request.get("talk_key")))
 
-app = webapp2.WSGIApplication([
-    ('/', MainHandler)
-], debug=True)
+            if not user in talk.users:
+                # Add user to users, allow to talk.
+                talk.users.append(user)
+
+        key_name = self.request.get("talk_key")
+        template_things = {"id": key_name, "talk": talk}
+        self.response.write(self.render_template("index.html", template_things))
+
+    def post(self):
+        user = users.get_current_user()
+
+        sent_message = self.request.get("message_content")
+        talk = Talk.get_by_id(long(self.request.get("talk_key")))
+        message_package = {"author": str(user), "message": sent_message}
+        talk.messages.append(message_package)
+        talk.put()
+
+        key_name = long(self.request.get("talk_key"))
+        template_things = {"id": key_name, "talk": talk}
+        self.response.write(self.render_template("index.html", template_things))
+
+app = webapp2.WSGIApplication([('/', MainHandler)],
+                              debug=True)
