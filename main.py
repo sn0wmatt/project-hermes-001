@@ -45,6 +45,7 @@ class MainHandler(webapp2.RequestHandler):
             return
         if not talk_key:
             talk = Talk()
+            talk.host = user
             talk.put()
             self.talk = talk
             talk_key = talk.key.id()
