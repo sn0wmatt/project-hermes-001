@@ -21,6 +21,23 @@ from google.appengine.api import users
 from google.appengine.ext.webapp import template
 from models import Talk
 
+class ChatroomListHandler(webapp2.RequestHandler):
+    """
+        This is a temporarily named test handler
+    """
+    def render_template(self, template_name, values):
+        path = os.path.join(os.path.dirname(__file__), "home", template_name)
+        return template.render(path, values)
+
+    def get(self):
+        query = Talk.query()
+        to_parse = list()
+        for singular in query:
+            f_q = {"talk_key": str(singular.key.id()), "name": singular.name}
+            to_parse.append(f_q)
+        template_string = {"query_results": to_parse}
+        self.response.write(self.render_template("home.html", template_string))
+
 class MainHandler(webapp2.RequestHandler):
     """
         This is the main handler.
@@ -74,5 +91,11 @@ class MainHandler(webapp2.RequestHandler):
         template_things = {"id": key_name, "talk": talk}
         self.response.write(self.render_template("index.html", template_things))
 
-app = webapp2.WSGIApplication([('/', MainHandler)],
+class RedirectHandler(webapp2.RequestHandler):
+    def get(self):
+        self.redirect("/home")
+
+app = webapp2.WSGIApplication([('/chatroom', MainHandler),
+                                ('/home', ChatroomListHandler),
+                                ('/', RedirectHandler)],
                               debug=True)
