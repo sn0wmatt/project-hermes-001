@@ -1,10 +1,14 @@
 <html>
 <head>
-  {% block title%}{% endblock %}
+  <title>Project Hermes</title>
 </head>
 <body>
+  <div class="header_container">
+  <a href="/chatroom">Add a new conversation</a>
+  <hr />
+  </div>
   {% for each in query_results %}
-  <a href="../chatroom?talk_key={{ each.talk_key }}">{{ each.name }}</a><br/>
+  <a href="/chatroom?talk_key={{ each.talk_key }}">{{ each.name }}</a><br/>
   {% endfor %}
 </body>
 </html>

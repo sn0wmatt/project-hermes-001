@@ -1,0 +1,25 @@
+<html>
+
+<head>
+  <title>Project Hermes - Rename</title>
+</head>
+
+<body>
+  <h1>Rename chatroom</h1>
+
+  {% if talk.name == None %}
+    {% if talk.host != user %}
+      Nothing to see here! Click <a href="/chatroom?talk_key={{ id }}">here</a> to return.
+    {% else %}
+    <form action="/chatroomRename" method="POST">
+      <input name="name" type="text" /><button type="submit">Rename</button>
+      <input type="hidden" value="{{ id }}" name="talk_key" />
+    </form>
+    {% endif %}
+  {% else %}
+    Nothing to see here! Click <a href="/chatroom?talk_key={{ id }}">here</a> to return.
+  {% endif %}
+
+</body>
+
+</html>

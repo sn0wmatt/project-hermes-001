@@ -2,7 +2,7 @@
 
 <head>
   <title>{% block title_content %}{% endblock %}</title>
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="style.css" />
   <style>
   html, body {
     height: 100%;
@@ -56,7 +56,16 @@
 
 <body>
   <span style="width: 100%; text-align: center;"><h1>Project Hermes </h1></span>
-  <form method="POST" action="/?talk_key={{ id }}">
+  {% if talk.name == None %}
+    {% if talk.host == user %}
+      This chat has no name. Click <a href="/chatroomRename?talk_key={{ id }}">here</a> to name this chat!
+    {% else %}
+      This chat has no name.
+    {% endif %}
+  {% else %}
+    {{ talk.name }}
+  {% endif %}
+  <form method="POST" action="/chatroom?talk_key={{ id }}">
   <div class="mainContainer">
     <div class="messageCont">
       <div class="messageBox" id="MessageBox">
