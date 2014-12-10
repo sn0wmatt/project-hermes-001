@@ -16,9 +16,12 @@
 #
 import webapp2
 import os
+import datetime
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import template
+from google.appengine.api import channel
+
 from models import Talk
 
 class BaseHandler(webapp2.RequestHandler):
@@ -53,21 +56,24 @@ class MainHandler(BaseHandler):
         if not talk_key:
             talk = Talk()
             talk.host = user
+            talk.users.append(user)
             talk.put()
             self.talk = talk
             talk_key = talk.key.id()
             self.redirect(str(self.request.url + "?talk_key=%i" % talk_key ))
         else:
             talk = Talk.get_by_id(long(self.request.get("talk_key")))
-
-            if not user in talk.users:
-                # Add user to users, allow to talk.
-                talk.users.append(user)
+            if talk == None:
+                self.redirect("/home")
+        if user not in talk.users:
+            talk.users.append(user)
+            talk.put()
 
         key_name = self.request.get("talk_key")
-        template_things = {"id": key_name, "talk": talk, "user": user}
+        channel_id = str(user.user_id() + str(talk_key))
+        channel_token = channel.create_channel(channel_id)
+        template_things = {"id": key_name, "talk": talk, "user": user, "token": channel_token}
         self.response.write(self.render_template("index.html", "html", template_things))
-        self.response.write("Name: %s" % talk)
 
     def post(self):
         user = users.get_current_user()
@@ -101,8 +107,19 @@ class ChatroomRenameHandler(BaseHandler):
         talk.put()
         self.redirect("chatroom?talk_key=%s&name=%s" % (str(talk_key), str(name)))
 
-app = webapp2.WSGIApplication([('/chatroom', MainHandler),
+class MessageHandler(webapp2.RequestHandler):
+    def post(self):
+        message = self.request.get("message_content")
+        talk_key = self.request.get("talk_key")
+        talk = Talk.get_by_id(long(talk_key))
+        for user in talk.users:
+            """ Send message to those users """
+            client_id = str(user.user_id()) + str(talk_key)
+            channel.send_message(client_id,message)
+
+app = webapp2.WSGIApplication([ ('/chatroom', MainHandler),
                                 ('/chatroomRename', ChatroomRenameHandler),
                                 ('/home', ChatroomListHandler),
+                                ('/message', MessageHandler),
                                 ('/', RedirectHandler)],
                               debug=True)

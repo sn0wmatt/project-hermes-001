@@ -8,7 +8,13 @@
   <hr />
   </div>
   {% for each in query_results %}
-  <a href="/chatroom?talk_key={{ each.talk_key }}">{{ each.name }}</a><br/>
+  <a href="/chatroom?talk_key={{ each.talk_key }}">
+  {% if each.name == None %}
+    Un-named chat.
+  {% else %}
+    {{ each.name }}
+  {% endif %}
+  </a><br/>
   {% endfor %}
 </body>
 </html>

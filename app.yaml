@@ -9,13 +9,17 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
+- url: /html
+  static_dir: static/html
+
+- url: /scripts
+  static_dir: static/scripts
+
 - url: /.*
   script: main.app
 
-- url: /html/
-  static_dir: static/html
-
 libraries:
+
 - name: webapp2
   version: "2.5.2"
 - name: jinja2
