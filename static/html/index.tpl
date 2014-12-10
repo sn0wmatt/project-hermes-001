@@ -3,69 +3,20 @@
 <head>
   <title>{% block title_content %}{% endblock %}</title>
   <link rel="stylesheet" href="/html/style.css" />
-  <style>
-  html, body {
-    height: 100%;
-    min-height: 100%;
-  }
-
-  .right {
-    float: right;
-  }
-
-  .left {
-    float: left;
-  }
-
-  .mainContainer {
-    width: 80%;
-    margin-left: 10%;
-  }
-
-  .messageCont {
-    display: inline-block;
-    width: 100%;
-    border: 4px solid blue;
-    height: 80%;
-    border-radius: 4px;
-  }
-
-  .timerBox {
-    width: auto;
-    display: inline-block;
-    text-align: center;
-  }
-
-  .messageBox {
-    height: auto;
-  }
-
-  .message {
-    border-bottom: 1px solid black;
-    border-width: 80%;
-  }
-
-  .sendButton {
-    width: 10%;
-    display: inline-block;
-    float: right;
-  }
-
-  </style>
+  
   <script type="text/javascript" src="/_ah/channel/jsapi"></script>
   <script src="/scripts/jquery.min.js" type="text/javascript"></script>
 </head>
 
 <body>
 <script>
-$(document).ready(function() {
-
+$(document).ready() {
   onOpened = function() {
     connected = true;
     // sendMessage('opened');
   };
   onMessage = function(msg) {
-    $('#MessageBox').append(msg.data + '<hr />')
+    alert(msg.data);
   };
   onError = function(err) {
     //    alert(err);
@@ -82,7 +33,7 @@ $(document).ready(function() {
   socket.onerror = onError;
   socket.onclose = onClose;
 
-  $("#formID").submit(function(event) {
+  $("#sendButton").submit(function(event) {
 
     event.preventDefault();
 
@@ -90,6 +41,10 @@ $(document).ready(function() {
     url = $form.attr( 'action' );
 
     var posting = $.post( url, { message_content: $('#message_content').val(), talk_key: {{ id }} } );
+
+    posting.done(function( data ) {
+      alert('success');
+    });
   });
 });
 </script>
@@ -99,20 +54,16 @@ $(document).ready(function() {
 
 
   <span style="width: 100%; text-align: center;"><h1>Project Hermes </h1></span>
-
-  <div style="width: 100%; text-align: center;">
-    {% if talk.name == None %}
-      {% if talk.host == user %}
-        This chat has no name. Click <a href="/chatroomRename?talk_key={{ id }}">here</a> to name this chat!
-      {% else %}
-        This chat has no name.
-      {% endif %}
+  {% if talk.name == None %}
+    {% if talk.host == user %}
+      This chat has no name. Click <a href="/chatroomRename?talk_key={{ id }}">here</a> to name this chat!
     {% else %}
-      {{ talk.name }}
+      This chat has no name.
     {% endif %}
-    | <a href="home">Home</a>
-  </div>
-  <form id="formID" method="POST" action="/message?talk_key={{ id }}">
+  {% else %}
+    {{ talk.name }}
+  {% endif %}
+  <form method="POST" action="/message?talk_key={{ id }}">
   <input type="hidden" name="talk_key" value="{{ id }}" />
   <div class="mainContainer">
     <div class="messageCont">
@@ -120,7 +71,7 @@ $(document).ready(function() {
       </div>
     </div>
     <input type="text" name="message_content" id="message_content" style="width: 90%; display: inline-block;" />
-    <button type="submit" id="sendButton" class="sendButton">Go</button>
+    <button id="sendButton" class="sendButton" onClick="sendMessage()">This is button!</button>
   </div>
   </form>
 </body>
